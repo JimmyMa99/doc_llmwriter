@@ -20,6 +20,8 @@ from functools import lru_cache
 from textsplitter.zh_title_enhance import zh_title_enhance
 from langchain.chains.base import Chain
 
+import pdb
+
 
 # patch HuggingFaceEmbeddings to make it hashable
 def _embeddings_hash(self):
@@ -278,10 +280,9 @@ class LocalDocQA:
         results = bing_search(query)
         result_docs = search_result2docs(results)
         prompt = generate_prompt(result_docs, query)
-
+        pdb.set_trace()
         answer_result_stream_result = self.llm_model_chain(
             {"prompt": prompt, "history": chat_history, "streaming": streaming})
-
         for answer_result in answer_result_stream_result['answer_result_stream']:
             resp = answer_result.llm_output["answer"]
             history = answer_result.history
@@ -290,6 +291,32 @@ class LocalDocQA:
                         "result": resp,
                         "source_documents": result_docs}
             yield response, history
+    def get_prompt_from_file(self, code_prompt_dir):
+        # pdb.set_trace()
+        with open(code_prompt_dir, "r") as f:
+            prompt = f.read()
+            # pdb.set_trace()
+        return prompt
+
+    def get_code_based_answer(self, code_prompt_dir, chat_history=[], streaming: bool = STREAMING):
+        # results = bing_search(query)
+        # result_docs = search_result2docs(results)
+        # prompt = generate_prompt(result_docs, query)
+        # pdb.set_trace()
+        prompt=self.get_prompt_from_file(code_prompt_dir)
+
+        answer_result_stream_result = self.llm_model_chain(
+            {"prompt": prompt, "history": chat_history, "streaming": streaming})
+
+        for answer_result in answer_result_stream_result['answer_result_stream']:
+            resp = answer_result.llm_output["answer"]
+            history = answer_result.history
+            history[-1][0] = code_prompt_dir
+            response = {"query": 'code dir is:'+code_prompt_dir,
+                        "result": resp,
+                        "source_documents": 'code'}
+            yield response, history
+
 
     def delete_file_from_vector_store(self,
                                       filepath: str or List[str],

@@ -8,12 +8,18 @@ import models.shared as shared
 from models.loader.args import parser
 from models.loader import LoaderCheckPoint
 import os
+
+
+from tools_get.get_filename import list_filenames_in_directory
+from tools_get.write_doc import write_doc
+# os.environ["CUDA_VISIBLE_DEVICES"] = "5" 
 import sys
-# os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
 sys.path.append("/media/ders/mazhiming/langchain-ChatGLM/LLM_model/internlm-chat-7b")
 
 nltk.data.path = [NLTK_DATA_PATH] + nltk.data.path
 
+
+import pdb
 
 def get_vs_list():
     lst_default = ["新建知识库"]
@@ -87,6 +93,24 @@ def get_answer(query, vs_path, history, mode, score_threshold=VECTOR_SEARCH_SCOR
         else:
             yield history + [[query,
                               "请选择知识库后进行测试，当前未选择知识库。"]], ""
+    elif mode=='代码文档生成':
+        #此时query将会是一个文件夹路径：prompt_files
+        code_prompt_dirs=query
+        filenames,relative_filenames=list_filenames_in_directory(code_prompt_dirs)
+
+
+
+        for filenames,relative_filename in zip(filenames,relative_filenames):
+            #这里会把所有的行输出，最终加入到history中
+            for resp, history in local_doc_qa.get_code_based_answer(
+                    code_prompt_dir=relative_filename, chat_history=history, streaming=streaming):
+                source = "\n\n"
+
+                history[-1][-1] += source
+                yield history, ""
+            
+            # pdb.set_trace()
+            write_doc(relative_filename,history[-1])
     else:
 
         answer_result_stream_result = local_doc_qa.llm_model_chain(
@@ -355,7 +379,7 @@ with gr.Blocks(css=block_css, theme=gr.themes.Default(**default_theme_args)) as 
                 query = gr.Textbox(show_label=False,
                                    placeholder="请输入提问内容，按回车进行提交").style(container=False)
             with gr.Column(scale=5):
-                mode = gr.Radio(["LLM 对话", "知识库问答", "Bing搜索问答"],
+                mode = gr.Radio(["LLM 对话", "知识库问答", "Bing搜索问答","代码文档生成"],
                                 label="请选择使用模式",
                                 value="知识库问答", )
                 knowledge_set = gr.Accordion("知识库设定", visible=False)

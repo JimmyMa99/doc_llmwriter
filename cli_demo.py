@@ -6,7 +6,8 @@ from models.loader.args import parser
 import models.shared as shared
 from models.loader import LoaderCheckPoint
 nltk.data.path = [NLTK_DATA_PATH] + nltk.data.path
-
+import sys
+sys.path.append("/media/ders/mazhiming/langchain-ChatGLM/LLM_model/internlm-chat-7b")
 # Show reply with source text from input document
 REPLY_WITH_SOURCE = True
 
@@ -54,6 +55,7 @@ def main():
     while True:
         query = input("Input your question 请输入问题：")
         last_print_len = 0
+        #InternLM 没有输出history
         for resp, history in local_doc_qa.get_knowledge_based_answer(query=query,
                                                                      vs_path=vs_path,
                                                                      chat_history=history,
@@ -65,7 +67,7 @@ def main():
                 print(resp["result"])
         if REPLY_WITH_SOURCE:
             source_text = [f"""出处 [{inum + 1}] {os.path.split(doc.metadata['source'])[-1]}：\n\n{doc.page_content}\n\n"""
-                           # f"""相关度：{doc.metadata['score']}\n\n"""
+                           f"""相关度：{doc.metadata['score']}\n\n"""
                            for inum, doc in
                            enumerate(resp["source_documents"])]
             print("\n\n" + "\n\n".join(source_text))

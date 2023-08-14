@@ -136,7 +136,7 @@ llm_model_dict = {
         # 此外不同时期的ggml格式并不兼容，因此不同时期的ggml需要安装不同的llama-cpp-python库，且实测pip install 不好使
         # 需要手动从https://github.com/abetlen/llama-cpp-python/releases/tag/下载对应的wheel安装
         # 实测v0.1.63与本模型的vicuna/ggml-vicuna-13b-1.1/ggml-vic13b-q5_1.bin可以兼容
-        "local_model_path": f'''{"/".join(os.path.abspath(__file__).split("/")[:3])}/.cache/huggingface/hub/models--vicuna--ggml-vicuna-13b-1.1/blobs/''',
+        "local_model_path": 'ggml-vic13b-q5_1.bin',#f'''{"/".join(os.path.abspath(__file__).split("/")[:3])}/.cache/huggingface/hub/models--vicuna--ggml-vicuna-13b-1.1/blobs/''',
         "provides": "LLamaLLMChain"
     },
 
@@ -166,6 +166,19 @@ llm_model_dict = {
         "api_base_url": "http://localhost:8000/v1",  # "name"修改为fastchat服务中的"api_base_url"
         "api_key": "EMPTY"
     },
+    "internlm-chat-7b": {
+        "name": "internlm-chat-7b",  # "name"修改为fastchat服务中的"model_name"
+        "pretrained_model_name": "internlm/internlm-chat-7b",
+        "local_model_path": "/media/ders/mazhiming/langchain-ChatGLM/LLM_model/internlm-chat-7b",
+        "provides": "ChatGLMLLMChain",  # 使用fastchat api时，需保证"provides"为"FastChatOpenAILLMChain"
+
+    },
+    #     "chatglm-6b": {
+    #     "name": "chatglm-6b",
+    #     "pretrained_model_name": "THUDM/chatglm-6b",
+    #     "local_model_path": None,
+    #     "provides": "ChatGLMLLMChain"
+    # },
     # 调用chatgpt时如果报出： urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.openai.com', port=443):
     #  Max retries exceeded with url: /v1/chat/completions
     # 则需要将urllib3版本修改为1.25.11
@@ -186,7 +199,7 @@ llm_model_dict = {
 }
 
 # LLM 名称
-LLM_MODEL = "chatglm-6b"
+LLM_MODEL = "chatglm-6b"#chatglm-6b internlm-chat-7b
 # 量化加载8bit 模型
 LOAD_IN_8BIT = False
 # Load the model with bfloat16 precision. Requires NVIDIA Ampere GPU.
